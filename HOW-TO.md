@@ -501,6 +501,7 @@ _Successful exploit response_
 We can verify this by going to the Juice Shop and refreshing the page.
 
 ![alt text](ProductTamper10.png)
+
 _Product description on Juice Shop has been changed_
 
 #### Remediating the Broken Access Control Vulnerability
@@ -521,7 +522,7 @@ Additionally there is a line further down that allows authorized users to make P
 
 ![alt text](ProductTamper13.png)
 
-_Additionall fixed code in server.ts_
+_Additional fixed code in server.ts_
 
 #### Key Takeaways
 
