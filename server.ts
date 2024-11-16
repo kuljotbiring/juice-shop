@@ -348,10 +348,14 @@ restoreOverwrittenFilesWithOriginals().then(() => {
     .get(security.isAuthorized())
     .put(security.denyAll())
     .delete(security.denyAll())
+
+    //-----------------------------MODIFIED PR-3-JASONGOTTLIEB-----------------------------
   /* Products: Only GET is allowed in order to view products */ // vuln-code-snippet neutral-line changeProductChallenge
-  app.post('/api/Products', security.isAuthorized()) // vuln-code-snippet neutral-line changeProductChallenge
-  // app.put('/api/Products/:id', security.isAuthorized()) // vuln-code-snippet vuln-line changeProductChallenge
+  app.post('/api/Products', security.denyAll()) // vuln-code-snippet neutral-line changeProductChallenge
+  app.put('/api/Products/:id', security.denyAll()) // vuln-code-snippet vuln-line changeProductChallenge
   app.delete('/api/Products/:id', security.denyAll())
+  //-----------------------------MODIFIED PR-3-JASONGOTTLIEB-----------------------------
+
   /* Challenges: GET list of challenges allowed. Everything else forbidden entirely */
   app.post('/api/Challenges', security.denyAll())
   app.use('/api/Challenges/:id', security.denyAll())
@@ -397,7 +401,11 @@ restoreOverwrittenFilesWithOriginals().then(() => {
   })
   app.post('/api/Users', verify.registerAdminChallenge())
   app.post('/api/Users', verify.passwordRepeatChallenge()) // vuln-code-snippet hide-end
-  app.post('/api/Users', verify.emptyUserRegistration())
+
+  //-----------------------------MODIFIED PR-3-JASONGOTTLIEB-----------------------------
+  //app.post('/api/Users', verify.emptyUserRegistration())
+  //-----------------------------MODIFIED PR-3-JASONGOTTLIEB-----------------------------
+
   /* Unauthorized users are not allowed to access B2B API */
   app.use('/b2b/v2', security.isAuthorized())
   /* Check if the quantity is available in stock and limit per user not exceeded, then add item to basket */
