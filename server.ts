@@ -467,7 +467,8 @@ restoreOverwrittenFilesWithOriginals().then(() => {
   finale.initialize({ app, sequelize })
 
   const autoModels = [
-    { name: 'User', exclude: ['password', 'totpSecret'], model: UserModel },
+    // add role to the attributes of the User model that should not be exposed by the automatically generated API
+    { name: 'User', exclude: ['password', 'totpSecret', 'role'], model: UserModel },
     { name: 'Product', exclude: [], model: ProductModel },
     { name: 'Feedback', exclude: [], model: FeedbackModel },
     { name: 'BasketItem', exclude: [], model: BasketItemModel },
@@ -492,7 +493,11 @@ restoreOverwrittenFilesWithOriginals().then(() => {
 
     // create a wallet when a new user is registered using API
     if (name === 'User') { // vuln-code-snippet neutral-line registerAdminChallenge
-      resource.create.send.before((req: Request, res: Response, context: { instance: { id: any }, continue: any }) => { // vuln-code-snippet vuln-line registerAdminChallenge
+      // add role: any so that role exists on the context.instance object which allows assigning default value of customer if no role provided - enforcign user restrictions
+      resource.create.send.before((req: Request, res: Response, context: { instance: { id: any, role: any }, continue: any }) => { // vuln-code-snippet vuln-line registerAdminChallenge
+        // Set default role to 'customer' if no role is specified
+        context.instance.role = context.instance.role ? context.instance.role : 'customer';
+
         WalletModel.create({ UserId: context.instance.id }).catch((err: unknown) => {
           console.log(err)
         })

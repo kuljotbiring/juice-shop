@@ -529,3 +529,94 @@ _Additional fixed code in server.ts_
 The most important takeaway from this exploit is that simple configuration errors can lead to massive vulnerabilities. While a description of a product seems harmless, consider that if links were to be updated, users could be brought to malicious sites. Users trust that links on the Juice Shop are safe and aren’t expecting to vet them. Developers should consider at early stages of the development process, which users need access to what endpoints. Additionally, if something can be handled on the backend, it is safer than allowing someone to just send a request to the server and update something even if they are a trusted user. Lastly, developers should consider regular audits of what endpoints are exposed to continually harden the web app against attack.
 
 
+## Security Misconfiguration vulnerability - OWASP #5
+#### Admin Registration
+###### By: Kuljot Biring
+
+In this vulnerability we will be looking at how a user can register as an Administrator during the login process. This vulnerability takes advantage of improper input validation and the lack of string role enforcement during the user creation logic. When the application allows the user to set critical attributes such as ```role``` during the account creation process without any verification, an attacker can manipulate the request payload (e.g. using something like Burp Suite) to assingm themselves an elevated priveledge such as ```admin```. By exploiting this flaw, malicious actions can gain unauthorized administrative access which could lead to significant security risks such as unauthorized access to data and privlege escalation.
+
+Let's take a look at how we would exploit this vulnerability in OWASP Juiceshop. First open Burp Suite and use the browser in the proxy tab. We will not need to turn on intercept. Within the Proxy tab, we want to look at HTTP history.
+
+Lets use the Burp Proxy browser to register as a new user on the OWASP Juiceshop website.
+
+![alt text](image-userregistration.png)
+
+_screenshot of registering a user_
+
+Once that has gone through, we put our attention back on Burp Suite and the HTTP history tab. We are specifically interested in the POST request for ```/api/Users``` which is our account creation. If we highlight this request, we can see the request details as well as the response window. Let's first look at the request. We can see the JSON object which contains the values we had entered during account creation.
+
+Now take a look at the response window. We see most of the same fields as we saw in the request with some additional ones as well. Of particular interest is the value ```"role":"customer"```. We can assume that this is the authorization level we have when creating this account creation request. What would happen if we change that to a different value?
+
+![alt text](image-httphistory.png)
+
+_screenshot of Burp Proxy HTTP history request & response values_
+
+Let's send out request to Burp Suite's Repeater. Press ```Command + R``` for Mac (or ```Cntrl + R``` for Windows). This now brings up our request in Burp Suite's Repeater. Looking at our request, lets do two things:
+
+1. change the email to something different (here we are appending KB to our email address)
+2. add the field ```"role":"admin"``` to the JSON in the request
+
+What we are doing is essentially creating another user with an attempt to set the role as an admin.
+
+![alt text](image-repeater.png)
+
+_screenshot of Burp Proxy Repeater editing the request_
+
+Now let's press send and see what happens.
+
+Great! it seems like our attempt to create a user with an admin role is successful. We know this because a Response window in Repeater is returned with ```"status":"success"``` in addition to having our new email and the role set to admin. 
+
+![alt text](image-repeaterresponse.png)
+
+_screenshot of Burp Proxy Repeater successful request_
+
+We are fairly sure modifying the request with Repeater to create a new user with escalated privleges has worked. However, to be totally sure we are going to login as this new escalated user. Let's enter those details and press login (note the password will still be the same as the first user we created).
+
+![alt text](image-adminlogin.png)
+
+_screenshot of login as newly created admin_
+
+We have successfully logged in. We know from prior exploits that a user with admin privleges should be able to access the Administration panel via the url: 
+
+```https://juice-shop.herokuapp.com/#/administration```
+
+Congrats! We are able to access the administration panel with our newly created user. This means that our exploit of this vulnerability worked and we are able to create a user with administrative privleges.
+
+![alt text](image-adminpanel.png)
+
+_screenshot of admin access to administration page_
+
+
+#### Remediating Security Misconfiguration vulnerability
+
+Since we know that the validation for creating user permissions likely occurs on the server side of the code we look into the file ```server.ts``` in this file we go to lin 461 and can see the logic that handles creation of the user.
+
+First, we notice the line:
+
+```{ name: 'User', exclude: ['password', 'totpSecret'], model: UserModel },```
+
+We see that this line is part of the autoModels configuration. We also notice that the exlude prevents certain field fromg being includfed in API responses to allowed in request to create or update User resources. Therefore, since we don't want the role to be updated as wel we add it to the exlusion and modify the line as follows:
+
+```{ name: 'User', exclude: ['password', 'totpSecret', 'role'], model: UserModel },```
+
+This will prevent the role attribute from being expised during API calls and block any privlege escalation attempts.
+
+We also need to update the following line which is a hook that executes bfore sending the API resonse for the create user operation. Here it is allowing custom logic to modiy or validate data during user creation/
+
+```resource.create.send.before((req: Request, res: Response, context: { instance: { id: any }, continue: any }) => { ```
+
+It should be updated to:
+
+```resource.create.send.before((req: Request, res: Response, context: { instance: { id: any, role: any }, continue: any }) => {```
+
+We have added ```role: any``` to this line to ensure that the role property can be accessed adn asigned a value (e.g., 'customer') during user creation and to avoid Typscript compilation erros when trying to access ```context.instance.role```
+
+In the same vein we need to add the following line to set the defaul role to 'customer' if no role is specified
+
+```context.instance.role = context.instance.role ? context.instance.role : 'customer';```
+
+By modifying these lines of codes we are effectively not allowing the role to be modified by the user as well as setting the role to automatically be 'customer'. Doing this only allows users to have limited customer authorization by sanitizing any attempts at input or manipulation of the role value and preventing privlege escalation.
+
+#### Key Takeaways
+
+The exploitation of this vulnerability highlights the imporatance of having a robust form of input validation and enforcing strict access control. When applications allow users to set critical attributes (such as roles) they open themselves to a wide vector of attacks such as privlege escalation, where the users gain unauthorized access as a more privleged user. The heart of this vulnerability also lies with trusting user supplied inputs/data without verifying its authenticity or implementing safeguards to ensure user authorization. Applications should be designed with the principle of least privlege whilst having proper logging and monitoring can help detect, mitigate and prevent this type of exploit before a significant breach occurs.
