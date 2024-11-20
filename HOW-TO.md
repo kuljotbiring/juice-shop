@@ -433,6 +433,102 @@ To address the password strength vulnerability in the register form (\frontend\s
 The major takeaways from this exploit highlight the risks posed by weak passwords, which are common targets for attackers. Predictable passwords like "admin" or "password123" leave systems vulnerable to unauthorized access, especially when combined with automated attack tools like Burp Suite or Hydra, which can quickly perform brute-force attacks. To mitigate such vulnerabilities, it is important to implement strong authentication controls, including enforcing complex password policies, setting up account lockout mechanisms to thwart brute-force attempts, and utilizing multi-factor authentication (MFA) for added security, particularly for administrative accounts.
 
 
+## Broken Access Control Vulnerability - OWASP #3
+#### Exploiting Broken Access Control
+###### By: Jason Gottlieb
+
+I exploited a vulnerability that took advantage of broken access control and falls under OWASP #3. I chose to attempt to edit the description of a product on the product page of the Juice Shop by sending my own unauthenticated request to the server. Broken access control attacks are exploits that are vulnerable due to misconfigurations of permissions. In this case, the Juice Shop allows anyone to send a request to the server to change the descriptions of products provided they know the right information. While it isn’t spelled out specifically what you need to know, with a little bit of digging someone can figure out what information they need in the request.
+
+I started by downloading an application called Burp Suite Community edition. This software allows you to monitor network traffic and send your own HTTP requests to websites. We can start by navigating to the ‘HTTP History’ under the ‘Proxy’ tab in Burp Suite and then searching for the product we want to modify on the juice shop.
+
+![alt text](ProductTamper1.png)
+
+_screenshot of the Burp Suite next to product to tamper with_
+
+If we scroll to the most recent request we can see that there was a GET request to the site that matches our search.
+
+![alt text](ProductTamper2.png)
+
+_screenshot of selected GET request_
+
+We can right click on this request and send it to the Repeater tab to start trying to send our own requests based off of that one.
+
+![alt text](ProductTamper3.png)
+
+_screenshot of Repeater tab_
+
+In the repeater tab we can see that if we send that same request again to the server, we get a list of not just the product we were searching for but all products in the Juice Shop but they aren’t organized in any way. Generally a GET request is used to request information from the server and a PUT request is used to send information to the server. We could try changing the request to a PUT and sending our information but at the moment we aren’t using the right structure for our request. To find the information we will have to do a little digging.
+
+First we will navigate to the webpage and take a look at the code in the page inspector.
+
+![alt text](ProductTamper4.png)
+
+_screenshot of page inspector viewing main.js file_
+
+Looking through the Main.js file, we can eventually find a likely candidate for exploitation. We can see that there is an endpoint called ```/api/products``` that could be useful in our exploit.
+
+![alt text](ProductTamper5.png)
+
+_screenshot of /api/products in main.js_
+
+Let’s try sending a request to that endpoint from Burp Suite. When we do this, we find that we get a sorted list in all the products in the Juice Shop.
+
+![alt text](ProductTamper6.png)
+
+_screenshot of request and response from /api/products in Burp Suite_
+
+When scrolling through the list, we can see that the product we want to modify has an id of 9. Let’s try sending a request to that specific endpoint. 
+```
+api/products/9
+```
+
+![alt text](ProductTamper7.png)
+
+_screenshot of successful response_
+
+When we do this, we get an exact response for the product we want. At this point we can try sending a PUT request to the server to change the description. We just need to add a ```Content-Type: application/json``` to our request along with whatever information we want to change in the description.
+
+![alt text](ProductTamper8.png)
+
+_Exploit request_
+
+This time in the response we can see that the description has been updated.
+
+![alt text](ProductTamper9.png)
+
+_Successful exploit response_
+
+We can verify this by going to the Juice Shop and refreshing the page.
+
+![alt text](ProductTamper10.png)
+
+_Product description on Juice Shop has been changed_
+
+#### Remediating the Broken Access Control Vulnerability
+
+We can remedy this vulnerability by restricting who can send certain requests to the server. There is really no reason to allow anyone to send PUT requests to the server since any updating can be done on the backend. The problematic code can be found in the server.ts file.
+
+![alt text](ProductTamper11.png)
+
+_Vulnerable code in server.ts_
+
+Here we can see that routes using app.post to ```/api/products``` are allowed to be sent by anyone. Additionally, routes using app.put aren’t checked at all. We can see that app.delete requests are handled appropriately and set to ```denyALL```. We should do the same for PUT and POST rqeusts.
+
+![alt text](ProductTamper12.png)
+
+_Fixed code in server.ts_
+
+Additionally there is a line further down that allows authorized users to make POST requests. It would be safer to just do any updates on the server side, instead of allowing logged in users to send these requests. The safest thing we can do is just comment out line 400 which we have done here.
+
+![alt text](ProductTamper13.png)
+
+_Additional fixed code in server.ts_
+
+#### Key Takeaways
+
+The most important takeaway from this exploit is that simple configuration errors can lead to massive vulnerabilities. While a description of a product seems harmless, consider that if links were to be updated, users could be brought to malicious sites. Users trust that links on the Juice Shop are safe and aren’t expecting to vet them. Developers should consider at early stages of the development process, which users need access to what endpoints. Additionally, if something can be handled on the backend, it is safer than allowing someone to just send a request to the server and update something even if they are a trusted user. Lastly, developers should consider regular audits of what endpoints are exposed to continually harden the web app against attack.
+
+
 ## Security Misconfiguration vulnerability - OWASP #5
 #### Admin Registration
 ###### By: Kuljot Biring
