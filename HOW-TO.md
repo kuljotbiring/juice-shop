@@ -620,3 +620,44 @@ By modifying these lines of codes we are effectively not allowing the role to be
 #### Key Takeaways
 
 The exploitation of this vulnerability highlights the imporatance of having a robust form of input validation and enforcing strict access control. When applications allow users to set critical attributes (such as roles) they open themselves to a wide vector of attacks such as privlege escalation, where the users gain unauthorized access as a more privleged user. The heart of this vulnerability also lies with trusting user supplied inputs/data without verifying its authenticity or implementing safeguards to ensure user authorization. Applications should be designed with the principle of least privlege whilst having proper logging and monitoring can help detect, mitigate and prevent this type of exploit before a significant breach occurs.
+
+## Identification and Authentication Failures vulnerability - OWASP #7
+#### Reset Jim's password
+###### By: Pontipe Kopkaew
+
+For this vulnerability, we will exploit weak security questions. The goal of the challenge is to determine the answer to a security question for a user named Jim in order to reset his password.
+
+No tools are necessary; all that is required is a bit of research.
+
+To begin, Jim’s email address is provided on the product page under the reviews section: jim@juice-sh.op.
+
+![alt text](reset-password1.png)
+
+_screenshot of product page that displays Jim's email_
+
+After entering the email and clicking "Forgot Password," Jim’s security question appears: "Your eldest sibling's middle name?" This is the key to gaining access, so I start researching Jim’s background to uncover the answer.
+
+![alt text](reset-password2.png)
+
+_screenshot of login page that displays the security question_
+
+In one of the reviews, Jim mentions the phrase "Fresh out of a Replicator," which is a reference to Star Trek. Intrigued, I dig deeper and discover that Jim may be referencing Captain Kirk, a fictional character from Star Trek. Captain Kirk’s biography lists his older brother’s middle name as Samuel. With this information, I try "Samuel" as the answer to the security question, and it successfully resets Jim’s password.
+
+![alt text](reset-password3.png)
+
+_screenshot of response after sucessfully resetting password_
+
+#### Remediating Identification and Authentication Failures vulnerability
+To address the Reset Jim's password vulnerability in the securityQuestions file (\data\static) of the OWASP Juice Shop, I changed the security questions with more secure alternatives. However, the best approach would be to implement stronger security methods, such as multi-factor authentication (MFA), which requires users to verify their identity in multiple ways. For example, sending a one-time code to the user's email or phone adds an extra layer of protection. Additionally, it's important to educate users about the risks of sharing too much personal information online, particularly in public forums or product reviews, as this information can be exploited by attackers to gain access to their accounts.
+
+![alt text](reset-password4.png)
+
+_screenshot of vulnerable code snippet_
+
+![alt text](reset-password5.png)
+
+_screenshot of edited code_
+
+#### Key Takeaways
+- This issue shows the dangers of weak security questions, which are easy to guess or find online. They are not reliable for protecting accounts. It also highlights the risk of social engineering, where attackers use simple details from reviews or social media to trick people into sharing sensitive information.
+- Using multi-factor authentication (MFA) is an important defense, as it adds an extra step to protect accounts. However, technology alone is not enough. Educating users is key. When people understand the risks of sharing personal information, they are less likely to fall for attacks. This case reminds us that good security involves both strong protections and user awareness.
