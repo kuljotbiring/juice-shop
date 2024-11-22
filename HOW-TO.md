@@ -59,7 +59,7 @@ _code fix_
 XSS allows malicious code to be injected. Without sanitization and security checks, bad actors can perform a number of actions which can lead to various effects such as; running malicious scripts which can steal user information, cookies and run a wide variety of other nefarious code on your webpage. Here we are simply using a DOM XSS to trigger an alert as a proof of concept. However, as you can see, this vulnerability has a lot of potential for harm.
 
 ## Vulnerable and Outdated Components - OWASP #6
-#### Exploiting Outdated Allowlist
+#### Exploiting Outdated Allowlist via Enumeration and Reconnaissance
 ###### By: Jason Gottlieb
 
 For this vulnerability we will be looking at how outdated parts of a web application can be used as an attack vector. Often, websites will want to move users to another website to handle things such as donations or payments. Since developers want to ensure that users are only redirected to websites that are safe, they will ensure that only certain websites can be used as a redirect. The term for this collection of allowed URL's is an Allowlist. If an attacker tries to redirect a user through the site to a URL that they control, it won't work. 
@@ -101,7 +101,7 @@ _code fix_
 Allowlists are a powerful tool in controlling where users can be redirected. However, if they fall out of date they can become a serious vulnerability. Developers should strive to make sure that the URL's that are within their Allowlist are secure and can't be used for phishing scams. Additionally, Allowlists should be kept up to date. Developers should add checking their Allowlist to a regular maintenance schedule and frequently audit which URL's are contained within it.
 
 ## Cryptographic Failures vulnerability - OWASP #2
-#### Exploiting Sensitive Data
+#### Exploiting Sensitive Data via Directory Traversal
 ###### By: Pontipe Kopkaew
 
 For this vulnerability, we will exploit a confidential document. The goal is to find a hidden file containing sensitive information about potential hostile takeovers by management. By exploring various links within the application, we should be able to locate this unprotected file and access its contents.
@@ -147,7 +147,7 @@ _screenshot of secure code snippet from code editor_
 The key takeaway from this exploit is the importance for organizations to prioritize strong data protection measures to keep sensitive information safe. Protecting data is important not only for maintaining customer trust but also for complying with legal regulations and avoiding potential financial losses. Regularly reviewing and enhancing security practices is vital for reducing risks and ensuring that data is secure from potential threats.
 
 ## Injection Vulnerability - OWASP #3
-#### Exploiting SQL Injection
+#### Logging in as Administrator via SQL Injection
 ###### By: Jason Gottlieb
 
 For this vulnerability we will be looking at how directly passing user input to a SQL Query can lead to an injection attack. When allowing users to log in, the Juice Shop has a user type in their email and password. On the back end, the inputs are passed into a SQL Query that checks a table of emails and passwords. If the email and password matches what is on record, a token is passed back to the user that allows them to log in. This is standard practice for logging users into a service. The Juice Shop makes a mistake however when they do not check the user input to make sure that they are only putting in a valid email.
@@ -228,7 +228,7 @@ The biggest takeaway from this exploit is that it is important for developers to
 
 It is important for developers to know how SQL injection works so that they can select secure packages to handle their SQL Queries and take full advantage of the security measures that they offer.
 ## Broken Access Control Vulnerability - OWASP #1
-#### Exploiting Broken Acess Controls via Forging another user's review
+#### Exploiting Forging another user's review via User Impersonation Attack
 ###### By: Kuljot Biring
 
 In this vulnerability, I we will be taking advantage of broken access controls in OWASP Juice Shop. These vulnerabilities occur when an applicaiton does not properly restrict user permissions and allows unauthorized users to access or modify resources. This usually results from having inadequate authentication checks or failing to enfoce access controls at the applicaiton level. Attackers can take advantage of these weaknesses to access sensitive data or take unauthorized actions including but not limited to escalating priveledges. 
@@ -353,7 +353,7 @@ There is a known bug with the code and the current solution and the recommended 
 and concurs with the decision to document the problem and move to the next vulnerability.
 
 ## Identification and Authentication Failures vulnerability - OWASP #7
-#### Password Strength
+#### Exploiting Password Strength via Brute Force/Dictionary Attack
 ###### By: Pontipe Kopkaew
 
 For this vulnerability, we will exploit password strength. The goal is to log in with the administrator's user credentials without previously changing them or applying SQL Injection.
@@ -434,7 +434,7 @@ The major takeaways from this exploit highlight the risks posed by weak password
 
 
 ## Broken Access Control Vulnerability - OWASP #3
-#### Exploiting Broken Access Control
+#### Tampering with products via Insecure Direct Object Reference (IDOR)
 ###### By: Jason Gottlieb
 
 I exploited a vulnerability that took advantage of broken access control and falls under OWASP #3. I chose to attempt to edit the description of a product on the product page of the Juice Shop by sending my own unauthenticated request to the server. Broken access control attacks are exploits that are vulnerable due to misconfigurations of permissions. In this case, the Juice Shop allows anyone to send a request to the server to change the descriptions of products provided they know the right information. While it isn’t spelled out specifically what you need to know, with a little bit of digging someone can figure out what information they need in the request.
@@ -530,7 +530,7 @@ The most important takeaway from this exploit is that simple configuration error
 
 
 ## Security Misconfiguration vulnerability - OWASP #5
-#### Admin Registration
+#### Exploting Admin Registration via Privlege Escalation
 ###### By: Kuljot Biring
 
 In this vulnerability we will be looking at how a user can register as an Administrator during the login process. This vulnerability takes advantage of improper input validation and the lack of string role enforcement during the user creation logic. When the application allows the user to set critical attributes such as ```role``` during the account creation process without any verification, an attacker can manipulate the request payload (e.g. using something like Burp Suite) to assingm themselves an elevated priveledge such as ```admin```. By exploiting this flaw, malicious actions can gain unauthorized administrative access which could lead to significant security risks such as unauthorized access to data and privlege escalation.
@@ -622,7 +622,7 @@ By modifying these lines of codes we are effectively not allowing the role to be
 The exploitation of this vulnerability highlights the imporatance of having a robust form of input validation and enforcing strict access control. When applications allow users to set critical attributes (such as roles) they open themselves to a wide vector of attacks such as privlege escalation, where the users gain unauthorized access as a more privleged user. The heart of this vulnerability also lies with trusting user supplied inputs/data without verifying its authenticity or implementing safeguards to ensure user authorization. Applications should be designed with the principle of least privlege whilst having proper logging and monitoring can help detect, mitigate and prevent this type of exploit before a significant breach occurs.
 
 ## Identification and Authentication Failures vulnerability - OWASP #7
-#### Reset Jim's password
+#### Reset user Jim's password via Open Source Intelligence (OSINT)
 ###### By: Pontipe Kopkaew
 
 For this vulnerability, we will exploit weak security questions. The goal of the challenge is to determine the answer to a security question for a user named Jim in order to reset his password.
