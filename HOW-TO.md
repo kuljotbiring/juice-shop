@@ -433,7 +433,7 @@ To address the password strength vulnerability in the register form (\frontend\s
 The major takeaways from this exploit highlight the risks posed by weak passwords, which are common targets for attackers. Predictable passwords like "admin" or "password123" leave systems vulnerable to unauthorized access, especially when combined with automated attack tools like Burp Suite or Hydra, which can quickly perform brute-force attacks. To mitigate such vulnerabilities, it is important to implement strong authentication controls, including enforcing complex password policies, setting up account lockout mechanisms to thwart brute-force attempts, and utilizing multi-factor authentication (MFA) for added security, particularly for administrative accounts.
 
 
-## Broken Access Control Vulnerability - OWASP #3
+## Broken Access Control Vulnerability - OWASP #1
 #### Tampering with products via Insecure Direct Object Reference (IDOR)
 ###### By: Jason Gottlieb
 
